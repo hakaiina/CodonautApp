@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Codonaut</string>
+    <string name="onboarding_title_1">Открой для себя\nвселенную\nпрограммирования</string>
+    <string name="onboarding_description_1">Осваивай программирование шаг за шагом. Изучай теорию и применяй знания на практике</string>
+    <string name="onboarding_title_2">Учись, играя</string>
+    <string name="onboarding_description_2">Выполняй задания, открывай новые планеты и получай ценные призы</string>
+    <string name="onboarding_title_3">Твоя траектория\nобучения</string>
+    <string name="onboarding_description_3">Получай задания по своему уровню и разбирай ошибки с помощью ИИ</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_start">Начать</string>
+    <string name="onboarding_skip">Пропустить</string>
+</resources>

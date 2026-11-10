@@ -1,0 +1,51 @@
+# Gradle and Kotlin caches
+.gradle/
+.kotlin/
+**/build/
+
+# Android Studio
+.idea/
+*.iml
+captures/
+
+# Local configuration
+local.properties
+
+# Generated Android files
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+output-metadata.json
+
+# Logs and profiling
+*.log
+*.hprof
+
+# Signing keys
+*.jks
+*.keystore
+
+# Local secrets
+secrets.properties
+.env
+.env.*
+
+# Operating system files
+.DS_Store
+Thumbs.db
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
