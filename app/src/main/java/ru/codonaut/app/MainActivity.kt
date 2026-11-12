@@ -4,19 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import ru.codonaut.app.core.ui.theme.CodonautTheme
+import ru.codonaut.app.features.debug.GuestSessionTestScreen
 import ru.codonaut.app.features.onboarding.OnboardingScreen
 
 // объекты-маркеры, обозначающие направления навигации
@@ -65,7 +59,7 @@ private fun CodonautNavigation() {
                 }
 
                 LoginRoute -> NavEntry(key) {
-                    LoginPlaceholder()
+                    GuestSessionTestScreen()
                 }
 
                 else -> error("Unknown navigation route: $key") // неизвестный маршрут
@@ -74,17 +68,3 @@ private fun CodonautNavigation() {
     )
 }
 
-@Composable
-private fun LoginPlaceholder() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Экран входа — следующий этап",
-            style = MaterialTheme.typography.titleLarge
-        )
-    }
-}
