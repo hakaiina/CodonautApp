@@ -2,6 +2,7 @@ package ru.codonaut.app.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import ru.codonaut.app.domain.model.UserProfile
+import ru.codonaut.app.domain.model.PendingAccountLink
 
 // контракт, который объединяет работу с локальным профилем и его активной сессией
 // SessionRepository управляет тем, какой профиль используется в данный момент
@@ -22,4 +23,12 @@ interface SessionRepository {
 
     // сброс активного профиля
     suspend fun clearActiveProfile()
+
+    suspend fun savePendingAccountLink(
+        link: PendingAccountLink
+    )
+
+    suspend fun getPendingAccountLink(): PendingAccountLink?
+
+    suspend fun clearPendingAccountLink()
 }

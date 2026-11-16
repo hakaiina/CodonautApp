@@ -9,4 +9,6 @@
     <string name="onboarding_next">Далее</string>
     <string name="onboarding_start">Начать</string>
     <string name="onboarding_skip">Пропустить</string>
+    <string name="show_password">Показать пароль</string>
+    <string name="hide_password">Скрыть пароль</string>
 </resources>

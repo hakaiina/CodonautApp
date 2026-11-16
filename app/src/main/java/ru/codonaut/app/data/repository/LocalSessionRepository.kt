@@ -7,6 +7,7 @@ import ru.codonaut.app.data.local.preferences.ProfilePreferences
 import ru.codonaut.app.domain.model.UserProfile
 import ru.codonaut.app.domain.repository.ProfileRepository
 import ru.codonaut.app.domain.repository.SessionRepository
+import ru.codonaut.app.domain.model.PendingAccountLink
 
 // это конкретная реализация интерфейса SessionRepository через Room
 
@@ -63,5 +64,20 @@ class LocalSessionRepository(
 
     override suspend fun clearActiveProfile() {
         preferences.clearActiveProfile()
+    }
+
+    // реализация привязки аккаунта с регистрации к гостевому
+    override suspend fun savePendingAccountLink(
+        link: PendingAccountLink
+    ) {
+        preferences.savePendingAccountLink(link)
+    }
+
+    override suspend fun getPendingAccountLink(): PendingAccountLink? {
+        return preferences.getPendingAccountLink()
+    }
+
+    override suspend fun clearPendingAccountLink() {
+        preferences.clearPendingAccountLink()
     }
 }

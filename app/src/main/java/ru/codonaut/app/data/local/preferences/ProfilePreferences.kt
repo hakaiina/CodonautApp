@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import ru.codonaut.app.domain.model.PendingAccountLink
 
 // DataStore способ хранения простых данных настроек пользователя в Android
 // ProfilePreferences сохраняет идентификатор активного  пользователя
@@ -25,6 +26,15 @@ class ProfilePreferences(context: Context) {
 
         val GUEST_PROFILE_ID =
             stringPreferencesKey("guest_profile_id")
+
+        val PENDING_PROFILE_ID =
+            stringPreferencesKey("pending_link_profile_id")
+
+        val PENDING_AUTH_UID =
+            stringPreferencesKey("pending_link_auth_uid")
+
+        val PENDING_NICKNAME =
+            stringPreferencesKey("pending_link_nickname")
     }
 
     val activeProfileId: Flow<String?> =
@@ -56,6 +66,43 @@ class ProfilePreferences(context: Context) {
     suspend fun clearActiveProfile() {
         dataStore.edit { preferences ->
             preferences.remove(Keys.ACTIVE_PROFILE_ID)
+        }
+    }
+
+    suspend fun savePendingAccountLink(
+        link: PendingAccountLink
+    ) {
+        dataStore.edit { preferences ->
+            preferences[Keys.PENDING_PROFILE_ID] = link.profileId
+            preferences[Keys.PENDING_AUTH_UID] = link.authUid
+            preferences[Keys.PENDING_NICKNAME] = link.nickname
+        }
+    }
+
+    suspend fun getPendingAccountLink(): PendingAccountLink? {
+        val preferences = dataStore.data.first()
+
+        val profileId = preferences[Keys.PENDING_PROFILE_ID]
+            ?: return null
+
+        val authUid = preferences[Keys.PENDING_AUTH_UID]
+            ?: return null
+
+        val nickname = preferences[Keys.PENDING_NICKNAME]
+            ?: return null
+
+        return PendingAccountLink(
+            profileId = profileId,
+            authUid = authUid,
+            nickname = nickname
+        )
+    }
+
+    suspend fun clearPendingAccountLink() {
+        dataStore.edit { preferences ->
+            preferences.remove(Keys.PENDING_PROFILE_ID)
+            preferences.remove(Keys.PENDING_AUTH_UID)
+            preferences.remove(Keys.PENDING_NICKNAME)
         }
     }
 }

@@ -38,4 +38,10 @@ interface ProfileRepository {
         profileId: String,
         authUid: String
     ): Boolean
+
+    // создание профиля, если того нет
+    suspend fun createAccountProfile(
+        authUid: String,
+        nickname: String? = null
+    ): UserProfile
 }

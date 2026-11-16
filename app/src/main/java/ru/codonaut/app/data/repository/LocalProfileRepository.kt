@@ -92,4 +92,26 @@ class LocalProfileRepository(
             createdAt = createdAt
         )
     }
+
+    // сразу создаём профиль с authUid, не превращая его предварительно в гостевой
+    override suspend fun createAccountProfile(
+        authUid: String,
+        nickname: String?
+    ): UserProfile {
+        require(authUid.isNotBlank()) {
+            "Firebase UID must not be blank"
+        }
+
+        val entity = UserProfileEntity(
+            profileId = UUID.randomUUID().toString(),
+            authUid = authUid,
+            nickname = nickname?.trim()
+                ?.takeIf { it.isNotEmpty() },
+            createdAt = System.currentTimeMillis()
+        )
+
+        dao.insert(entity)
+
+        return entity.toDomain()
+    }
 }

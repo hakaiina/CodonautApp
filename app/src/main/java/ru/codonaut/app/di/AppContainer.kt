@@ -8,6 +8,10 @@ import ru.codonaut.app.data.repository.LocalProfileRepository
 import ru.codonaut.app.data.repository.LocalSessionRepository
 import ru.codonaut.app.domain.repository.ProfileRepository
 import ru.codonaut.app.domain.repository.SessionRepository
+import com.google.firebase.auth.FirebaseAuth
+import ru.codonaut.app.data.remote.auth.FirebaseAuthRepository
+import ru.codonaut.app.domain.repository.AuthRepository
+import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
 
 // di (Dependency Injection) - внедрение зависимостей
 
@@ -40,6 +44,24 @@ class AppContainer(context: Context) {
         LocalSessionRepository(
             profileRepository = profileRepository,
             preferences = profilePreferences
+        )
+    }
+
+    private val firebaseAuth: FirebaseAuth by lazy {
+        FirebaseAuth.getInstance()
+    }
+
+    val authRepository: AuthRepository by lazy {
+        FirebaseAuthRepository(
+            firebaseAuth = firebaseAuth
+        )
+    }
+
+    val accountSessionCoordinator: AccountSessionCoordinator by lazy {
+        AccountSessionCoordinator(
+            authRepository = authRepository,
+            profileRepository = profileRepository,
+            sessionRepository = sessionRepository
         )
     }
 }

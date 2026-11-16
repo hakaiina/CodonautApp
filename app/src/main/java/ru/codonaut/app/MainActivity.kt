@@ -5,17 +5,29 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import ru.codonaut.app.core.ui.theme.CodonautTheme
-import ru.codonaut.app.features.debug.GuestSessionTestScreen
+import ru.codonaut.app.features.auth.login.LoginScreen
+import ru.codonaut.app.features.auth.registration.RegistrationScreen
+import ru.codonaut.app.features.debug.SessionDebugScreen
 import ru.codonaut.app.features.onboarding.OnboardingScreen
+import java.util.UUID
 
-// объекты-маркеры, обозначающие направления навигации
 private data object OnboardingRoute
 private data object LoginRoute
+private data object RegistrationRoute
+
+// у каждого открытия экрана сессии собственный ключ
+private data class SessionDebugRoute(
+    val instanceId: String = UUID.randomUUID().toString()
+)
 
 class MainActivity : ComponentActivity() {
 
@@ -33,38 +45,92 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun CodonautNavigation() {
-    val backStack = remember {
-        mutableStateListOf<Any>(OnboardingRoute)
+
+    var backStack by remember {
+        mutableStateOf<List<Any>>(
+            listOf(OnboardingRoute)
+        )
     }
 
-    // получаем список маршрутов и строим соответствующий интерфейс
+    // заменяем весь стек за одну операцию
+    fun navigateAsRoot(route: Any) {
+        backStack = listOf(route)
+    }
+
+    // открываем следующий экран
+    fun navigateTo(route: Any) {
+        if (backStack.lastOrNull() != route) {
+            backStack = backStack + route
+        }
+    }
+
+    // возвращаемся на предыдущий экран
+    fun navigateBack() {
+        if (backStack.size > 1) {
+            backStack = backStack.dropLast(1)
+        }
+    }
+
     NavDisplay(
-        // backStack хранит историю переходов пользователя по экранам приложения
         backStack = backStack,
+
         onBack = {
-            if (backStack.size > 1) {
-                backStack.removeAt(backStack.lastIndex) // если в стеке больше одного маршрута, удаляется последний
-            }
+            navigateBack()
         },
+
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
+        ),
+
         entryProvider = { key ->
             when (key) {
+
                 OnboardingRoute -> NavEntry(key) {
                     OnboardingScreen(
-                        // после завершения онбординга
                         onFinished = {
-                            backStack.clear() // очищаем стек
-                            backStack.add(LoginRoute) // переходим к авторизации
+                            navigateAsRoot(LoginRoute)
                         }
                     )
                 }
 
                 LoginRoute -> NavEntry(key) {
-                    GuestSessionTestScreen()
+                    LoginScreen(
+                        onAuthenticated = {
+                            navigateAsRoot(SessionDebugRoute())
+                        },
+                        onRegistrationClick = {
+                            navigateTo(RegistrationRoute)
+                        }
+                    )
                 }
 
-                else -> error("Unknown navigation route: $key") // неизвестный маршрут
+                RegistrationRoute -> NavEntry(key) {
+                    RegistrationScreen(
+                        onBackClick = {
+                            navigateBack()
+                        },
+                        onRegistered = {
+                            navigateAsRoot(SessionDebugRoute())
+                        }
+                    )
+                }
+
+                is SessionDebugRoute -> NavEntry(key) {
+                    SessionDebugScreen(
+                        onSignedOut = {
+                            navigateAsRoot(LoginRoute)
+                        },
+                        onRegisterGuest = {
+                            navigateTo(RegistrationRoute)
+                        }
+                    )
+                }
+
+                else -> error(
+                    "Unknown navigation route: $key"
+                )
             }
         }
     )
 }
-

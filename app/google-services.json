@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "699018225731",
+    "project_id": "codonautapp",
+    "storage_bucket": "codonautapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699018225731:android:4bf51eef4f20e3c1c5ccf6",
+        "android_client_info": {
+          "package_name": "ru.codonaut.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqKaMxLZ8Hc4TK8s_e5jg9C_sDPaVth6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,208 @@
+package ru.codonaut.app.features.debug
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import ru.codonaut.app.CodonautApplication
+import ru.codonaut.app.core.ui.theme.CodonautColors
+import ru.codonaut.app.domain.model.UserProfile
+import ru.codonaut.app.domain.repository.SessionRepository
+import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
+
+data class SessionDebugUiState(
+    val isLoading: Boolean = true,
+    val profile: UserProfile? = null,
+    val error: String? = null,
+    val isSignedOut: Boolean = false
+)
+
+class SessionDebugViewModel(
+    private val sessionRepository: SessionRepository,
+    private val coordinator: AccountSessionCoordinator
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(SessionDebugUiState())
+    val uiState = _uiState.asStateFlow()
+
+    init {
+        loadProfile()
+    }
+
+    private fun loadProfile() {
+        viewModelScope.launch {
+            try {
+                val profile = sessionRepository.getActiveProfile()
+
+                _uiState.value = SessionDebugUiState(
+                    isLoading = false,
+                    profile = profile,
+                    error = if (profile == null) {
+                        "Активный профиль не найден"
+                    } else null
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.value = SessionDebugUiState(
+                    isLoading = false,
+                    error = "Не удалось загрузить профиль"
+                )
+            }
+        }
+    }
+
+    fun signOut() {
+        if (_uiState.value.isLoading) return
+
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
+
+        viewModelScope.launch {
+            try {
+                coordinator.signOut()
+
+                _uiState.value = SessionDebugUiState(
+                    isLoading = false,
+                    isSignedOut = true
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Не удалось выйти из профиля"
+                )
+            }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = this[
+                    ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY
+                ] as CodonautApplication
+
+                SessionDebugViewModel(
+                    sessionRepository =
+                        application.container.sessionRepository,
+                    coordinator =
+                        application.container.accountSessionCoordinator
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SessionDebugScreen(
+    onSignedOut: () -> Unit,
+    onRegisterGuest: () -> Unit,
+    viewModel: SessionDebugViewModel = viewModel(
+        factory = SessionDebugViewModel.Factory
+    )
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.isSignedOut) {
+        if (state.isSignedOut) {
+            onSignedOut()
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(CodonautColors.WarmMist)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Проверка сессии",
+            style = MaterialTheme.typography.headlineSmall,
+            color = CodonautColors.EspressoBlack
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        if (state.isLoading) {
+            CircularProgressIndicator()
+        } else {
+            val profile = state.profile
+
+            if (profile != null) {
+                Text(
+                    text = if (profile.authUid == null) {
+                        "Режим: гость"
+                    } else {
+                        "Режим: зарегистрированный пользователь"
+                    }
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text("Никнейм: ${profile.nickname ?: "не задан"}")
+                Text("Profile ID: ${profile.profileId}")
+                Text("Firebase UID: ${profile.authUid ?: "нет"}")
+
+                Spacer(Modifier.height(24.dp))
+
+                if (profile.authUid == null) {
+                    Button(
+                        onClick = onRegisterGuest,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Зарегистрировать гостя")
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
+
+            if (state.error != null) {
+                Text(
+                    text = state.error!!,
+                    color = CodonautColors.Error
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = viewModel::signOut,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Выйти из профиля")
+            }
+        }
+    }
+}
