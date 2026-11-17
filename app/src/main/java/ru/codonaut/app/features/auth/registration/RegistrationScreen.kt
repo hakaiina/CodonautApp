@@ -119,7 +119,7 @@ private fun RegistrationContent(
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Создай свой аккаунт",
+                text = "Создайте свой аккаунт",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = CodonautColors.EspressoBlack

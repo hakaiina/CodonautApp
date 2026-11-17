@@ -5,6 +5,8 @@ import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
 import ru.codonaut.app.domain.model.AuthUser
 import ru.codonaut.app.domain.repository.AuthRepository
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import kotlinx.coroutines.CancellationException
 
 
 class FirebaseAuthRepository(
@@ -19,42 +21,71 @@ class FirebaseAuthRepository(
         email: String,
         password: String
     ): AuthUser {
-        val result = firebaseAuth
-            .createUserWithEmailAndPassword(
-                email.trim(),
-                password
-            )
-            .await() // приостанавливает корутину до получения результата, не блокируя основной поток
+        try {
+            val result = firebaseAuth
+                .createUserWithEmailAndPassword(
+                    email.trim(),
+                    password
+                )
+                .await()
 
-        val user = result.user
-            ?: error("Firebase не вернул созданного пользователя")
+            val user = result.user
+                ?: error("Firebase не вернул созданного пользователя")
 
-        return user.toDomain()
+            return user.toDomain()
+
+        } catch (e: CancellationException) {
+            throw e
+
+        } catch (e: Exception) {
+            throw e.toAuthOperationException()
+        }
     }
 
     override suspend fun signIn(
         email: String,
         password: String
     ): AuthUser {
-        val result = firebaseAuth
-            .signInWithEmailAndPassword(
-                email.trim(),
-                password
-            )
-            .await()
+        try {
+            val result = firebaseAuth
+                .signInWithEmailAndPassword(
+                    email.trim(),
+                    password
+                )
+                .await()
 
-        val user = result.user
-            ?: error("Firebase не вернул пользователя после входа")
+            val user = result.user
+                ?: error("Firebase не вернул пользователя после входа")
 
-        return user.toDomain()
+            return user.toDomain()
+
+        } catch (e: CancellationException) {
+            throw e
+
+        } catch (e: Exception) {
+            throw e.toAuthOperationException()
+        }
     }
 
-    override suspend fun sendPasswordReset(
-        email: String
-    ) {
-        firebaseAuth
-            .sendPasswordResetEmail(email.trim())
-            .await()
+    override suspend fun sendPasswordReset(email: String) {
+        try {
+            firebaseAuth
+                .sendPasswordResetEmail(email.trim())
+                .await()
+
+        } catch (e: CancellationException) {
+            throw e
+
+        } catch (e: FirebaseAuthInvalidUserException) {
+            if (e.errorCode != "ERROR_USER_NOT_FOUND") {
+                throw e.toAuthOperationException()
+            }
+
+            // не раскрываем существование email
+
+        } catch (e: Exception) {
+            throw e.toAuthOperationException()
+        }
     }
 
     override fun signOut() {

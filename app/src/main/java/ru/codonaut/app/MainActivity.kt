@@ -19,10 +19,23 @@ import ru.codonaut.app.features.auth.registration.RegistrationScreen
 import ru.codonaut.app.features.debug.SessionDebugScreen
 import ru.codonaut.app.features.onboarding.OnboardingScreen
 import java.util.UUID
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
+import ru.codonaut.app.features.startup.StartupUiState
+import ru.codonaut.app.features.startup.StartupViewModel
 
 private data object OnboardingRoute
 private data object LoginRoute
 private data object RegistrationRoute
+private data object StartupRoute
 
 // у каждого открытия экрана сессии собственный ключ
 private data class SessionDebugRoute(
@@ -48,7 +61,7 @@ private fun CodonautNavigation() {
 
     var backStack by remember {
         mutableStateOf<List<Any>>(
-            listOf(OnboardingRoute)
+            listOf(StartupRoute)
         )
     }
 
@@ -71,6 +84,48 @@ private fun CodonautNavigation() {
         }
     }
 
+    val startupViewModel: StartupViewModel = viewModel(
+        factory = StartupViewModel.Factory
+    )
+
+    val startupState by startupViewModel.uiState
+        .collectAsStateWithLifecycle()
+
+    LaunchedEffect(startupState) {
+        val currentRoute = backStack.singleOrNull()
+
+        when (startupState) {
+            StartupUiState.Onboarding -> {
+                if (currentRoute == StartupRoute) {
+                    navigateAsRoot(OnboardingRoute)
+                }
+            }
+
+            StartupUiState.Login -> {
+                if (
+                    currentRoute == StartupRoute ||
+                    currentRoute == OnboardingRoute
+                ) {
+                    navigateAsRoot(LoginRoute)
+                }
+            }
+
+            StartupUiState.Session -> {
+                if (currentRoute == StartupRoute) {
+                    navigateAsRoot(SessionDebugRoute())
+                }
+            }
+
+            StartupUiState.Error -> {
+                if (currentRoute == OnboardingRoute) {
+                    navigateAsRoot(StartupRoute)
+                }
+            }
+
+            StartupUiState.Loading -> Unit
+        }
+    }
+
     NavDisplay(
         backStack = backStack,
 
@@ -88,9 +143,7 @@ private fun CodonautNavigation() {
 
                 OnboardingRoute -> NavEntry(key) {
                     OnboardingScreen(
-                        onFinished = {
-                            navigateAsRoot(LoginRoute)
-                        }
+                        onFinished = startupViewModel::completeOnboarding
                     )
                 }
 
@@ -114,6 +167,21 @@ private fun CodonautNavigation() {
                             navigateAsRoot(SessionDebugRoute())
                         }
                     )
+                }
+
+                StartupRoute -> NavEntry(key) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (startupState == StartupUiState.Error) {
+                            Button(onClick = startupViewModel::restore) {
+                                Text("Повторить загрузку")
+                            }
+                        } else {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
 
                 is SessionDebugRoute -> NavEntry(key) {

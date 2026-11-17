@@ -166,4 +166,9 @@ class AccountSessionCoordinator(
 
         return profile
     }
+
+    // функция сброса пароля
+    suspend fun sendPasswordReset(email: String) {
+        authRepository.sendPasswordReset(email)
+    }
 }

@@ -12,6 +12,8 @@ import com.google.firebase.auth.FirebaseAuth
 import ru.codonaut.app.data.remote.auth.FirebaseAuthRepository
 import ru.codonaut.app.domain.repository.AuthRepository
 import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
+import ru.codonaut.app.data.repository.LocalAppStartupRepository
+import ru.codonaut.app.domain.repository.AppStartupRepository
 
 // di (Dependency Injection) - внедрение зависимостей
 
@@ -63,5 +65,9 @@ class AppContainer(context: Context) {
             profileRepository = profileRepository,
             sessionRepository = sessionRepository
         )
+    }
+
+    val appStartupRepository: AppStartupRepository by lazy {
+        LocalAppStartupRepository(profilePreferences)
     }
 }

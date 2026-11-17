@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import ru.codonaut.app.CodonautApplication
 import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
 import ru.codonaut.app.features.auth.validation.AuthInputValidator
+import ru.codonaut.app.features.auth.error.toAuthErrorMessage
 
 // LoginViewModel управляет состоянием экрана логина и координирует процесс аутентификации
 
@@ -32,7 +33,8 @@ class LoginViewModel(
         _uiState.value = _uiState.value.copy(
             email = value,
             emailError = null,
-            generalError = null
+            generalError = null,
+            passwordResetMessage = null
         )
     }
 
@@ -92,7 +94,7 @@ class LoginViewModel(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    generalError = "Не удалось войти. Проверьте данные и подключение к интернету."
+                    generalError = e.toAuthErrorMessage()
                 )
             }
         }
@@ -136,6 +138,56 @@ class LoginViewModel(
             isCompleted = false
         )
     }
+
+    // сброс пароля
+    fun sendPasswordReset() {
+        val current = _uiState.value
+
+        if (current.isLoading || current.isCompleted) return
+
+        val emailError = AuthInputValidator.validateEmail(current.email)
+
+        if (emailError != null) {
+            _uiState.value = current.copy(
+                emailError = emailError,
+                generalError = null,
+                passwordResetMessage = null
+            )
+            return
+        }
+
+        _uiState.value = current.copy(
+            isLoading = true,
+            emailError = null,
+            generalError = null,
+            passwordResetMessage = null
+        )
+
+        viewModelScope.launch {
+            try {
+                accountSessionCoordinator.sendPasswordReset(
+                    email = current.email.trim()
+                )
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    passwordResetMessage =
+                        "Если аккаунт с таким email существует, " +
+                                "на него будет отправлена ссылка для восстановления пароля."
+                )
+
+            } catch (e: CancellationException) {
+                throw e
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    generalError = e.toAuthErrorMessage()
+                )
+            }
+        }
+    }
+
 
     // Factory - это объект, который отвечает за создание экземпляров других классов
     // нужна для создания LoginViewModel

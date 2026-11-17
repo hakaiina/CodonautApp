@@ -16,9 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,13 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.codonaut.app.core.ui.components.TextField
 import ru.codonaut.app.core.ui.theme.CodonautColors
-import ru.codonaut.app.core.ui.theme.CodonautTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -66,7 +62,8 @@ fun LoginScreen(
         onPasswordChanged = viewModel::onPasswordChanged,
         onSignIn = viewModel::signIn,
         onContinueAsGuest = viewModel::continueAsGuest,
-        onRegistrationClick = onRegistrationClick
+        onRegistrationClick = onRegistrationClick,
+        onPasswordReset = viewModel::sendPasswordReset,
     )
 }
 
@@ -78,7 +75,8 @@ private fun LoginContent(
     onPasswordChanged: (String) -> Unit,
     onSignIn: () -> Unit,
     onContinueAsGuest: () -> Unit,
-    onRegistrationClick: () -> Unit
+    onRegistrationClick: () -> Unit,
+    onPasswordReset: () -> Unit,
 ) {
     val fieldColor = Color(0xFFC4BFBA)
     val guestButtonColor = Color(0xFF7D9C98)
@@ -144,6 +142,33 @@ private fun LoginContent(
                 isPassword = true,
                 imeAction = ImeAction.Done
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Забыли пароль?",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        enabled = !state.isLoading,
+                        onClick = onPasswordReset
+                    )
+                    .padding(vertical = 6.dp),
+                textAlign = TextAlign.End,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = registrationColor
+            )
+
+            if (state.passwordResetMessage != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = state.passwordResetMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = CodonautColors.DarkCocoa
+                )
+            }
 
             if (state.generalError != null) {
                 Spacer(modifier = Modifier.height(12.dp))

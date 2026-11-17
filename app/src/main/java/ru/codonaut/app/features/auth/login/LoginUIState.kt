@@ -12,9 +12,10 @@ data class LoginUiState(
     val passwordError: String? = null,
     // ошибка операции входа или гостевого режима
     val generalError: String? = null,
+    val passwordResetMessage: String? = null,
 
     // выполняется асинхронная операция
     val isLoading: Boolean = false,
     // юзер успешно вошёл или выбрал гостевой режим
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
 )

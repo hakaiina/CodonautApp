@@ -12,6 +12,9 @@ import kotlinx.coroutines.launch
 import ru.codonaut.app.CodonautApplication
 import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
 import ru.codonaut.app.features.auth.validation.AuthInputValidator
+import ru.codonaut.app.domain.model.AuthFailureReason
+import ru.codonaut.app.domain.model.AuthOperationException
+import ru.codonaut.app.features.auth.error.toAuthErrorMessage
 
 // RegistrationViewModel управляет состоянием экрана регистрации и координирует процесс регистрации
 
@@ -131,11 +134,40 @@ class RegistrationViewModel(
                 throw e
 
             } catch (e: Exception) {
+                val reason = (e as? AuthOperationException)?.reason
+                val message = e.toAuthErrorMessage()
+
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
+
+                    emailError =
+                        if (reason == AuthFailureReason.EMAIL_ALREADY_IN_USE) {
+                            message
+                        } else {
+                            null
+                        },
+
+                    passwordError =
+                        if (reason == AuthFailureReason.WEAK_PASSWORD) {
+                            message
+                        } else {
+                            null
+                        },
+
                     generalError =
-                        "Не удалось завершить регистрацию. " +
-                                "Проверьте подключение и данные."
+                        if (
+                            reason != AuthFailureReason.EMAIL_ALREADY_IN_USE &&
+                            reason != AuthFailureReason.WEAK_PASSWORD
+                        ) {
+                            if (e is AuthOperationException) {
+                                message
+                            } else {
+                                "Не удалось завершить регистрацию. " +
+                                        "Если аккаунт уже был создан, попробуйте войти."
+                            }
+                        } else {
+                            null
+                        }
                 )
             }
         }

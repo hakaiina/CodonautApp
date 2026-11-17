@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import ru.codonaut.app.domain.model.PendingAccountLink
+import androidx.datastore.preferences.core.booleanPreferencesKey
 
 // DataStore способ хранения простых данных настроек пользователя в Android
 // ProfilePreferences сохраняет идентификатор активного  пользователя
@@ -35,6 +36,10 @@ class ProfilePreferences(context: Context) {
 
         val PENDING_NICKNAME =
             stringPreferencesKey("pending_link_nickname")
+
+        // онбординг пройден
+        val ONBOARDING_COMPLETED =
+            booleanPreferencesKey("onboarding_completed")
     }
 
     val activeProfileId: Flow<String?> =
@@ -103,6 +108,17 @@ class ProfilePreferences(context: Context) {
             preferences.remove(Keys.PENDING_PROFILE_ID)
             preferences.remove(Keys.PENDING_AUTH_UID)
             preferences.remove(Keys.PENDING_NICKNAME)
+        }
+    }
+
+    // данные функции запоминают, что пользователь прошел онбординг не показывают его вновь
+    suspend fun isOnboardingCompleted(): Boolean {
+        return dataStore.data.first()[Keys.ONBOARDING_COMPLETED] ?: false
+    }
+
+    suspend fun completeOnboarding() {
+        dataStore.edit { preferences ->
+            preferences[Keys.ONBOARDING_COMPLETED] = true
         }
     }
 }
