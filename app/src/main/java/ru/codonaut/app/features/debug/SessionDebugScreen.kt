@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -30,21 +31,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.codonaut.app.CodonautApplication
+import ru.codonaut.app.R
 import ru.codonaut.app.core.ui.theme.CodonautColors
 import ru.codonaut.app.domain.model.UserProfile
 import ru.codonaut.app.domain.repository.SessionRepository
+import ru.codonaut.app.domain.repository.SelectedLanguageRepository
 import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
+import ru.codonaut.app.domain.model.ProgrammingLanguage
 
 data class SessionDebugUiState(
     val isLoading: Boolean = true,
     val profile: UserProfile? = null,
+    val selectedLanguageIds: List<String> = emptyList(),
     val error: String? = null,
     val isSignedOut: Boolean = false
 )
 
 class SessionDebugViewModel(
     private val sessionRepository: SessionRepository,
-    private val coordinator: AccountSessionCoordinator
+    private val coordinator: AccountSessionCoordinator,
+    private val selectedLanguageRepository: SelectedLanguageRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SessionDebugUiState())
@@ -66,6 +72,15 @@ class SessionDebugViewModel(
                         "Активный профиль не найден"
                     } else null
                 )
+                if (profile != null) {
+                    selectedLanguageRepository
+                        .observeSelectedLanguageIds(profile.profileId)
+                        .collect { ids ->
+                            _uiState.value = _uiState.value.copy(
+                                selectedLanguageIds = ids
+                            )
+                        }
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -115,7 +130,9 @@ class SessionDebugViewModel(
                     sessionRepository =
                         application.container.sessionRepository,
                     coordinator =
-                        application.container.accountSessionCoordinator
+                        application.container.accountSessionCoordinator,
+                    selectedLanguageRepository =
+                        application.container.selectedLanguageRepository
                 )
             }
         }
@@ -160,6 +177,21 @@ fun SessionDebugScreen(
             val profile = state.profile
 
             if (profile != null) {
+                val pythonName = stringResource(R.string.language_python)
+                val javascriptName = stringResource(R.string.language_javascript)
+                val javaName = stringResource(R.string.language_java)
+                val selectedLanguageNames = buildList {
+                    if (ProgrammingLanguage.PYTHON.id in state.selectedLanguageIds) {
+                        add(pythonName)
+                    }
+                    if (ProgrammingLanguage.JAVASCRIPT.id in state.selectedLanguageIds) {
+                        add(javascriptName)
+                    }
+                    if (ProgrammingLanguage.JAVA.id in state.selectedLanguageIds) {
+                        add(javaName)
+                    }
+                }
+
                 Text(
                     text = if (profile.authUid == null) {
                         "Режим: гость"
@@ -173,6 +205,14 @@ fun SessionDebugScreen(
                 Text("Никнейм: ${profile.nickname ?: "не задан"}")
                 Text("Profile ID: ${profile.profileId}")
                 Text("Firebase UID: ${profile.authUid ?: "нет"}")
+
+                Text(
+                    text = stringResource(
+                        R.string.session_debug_languages,
+                        selectedLanguageNames.joinToString()
+                            .ifBlank { stringResource(R.string.session_debug_no_languages) }
+                    )
+                )
 
                 Spacer(Modifier.height(24.dp))
 

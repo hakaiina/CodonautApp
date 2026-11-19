@@ -31,11 +31,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.LaunchedEffect
 import ru.codonaut.app.features.startup.StartupUiState
 import ru.codonaut.app.features.startup.StartupViewModel
+import ru.codonaut.app.features.languageSelection.LanguageSelectionScreen
 
 private data object OnboardingRoute
 private data object LoginRoute
 private data object RegistrationRoute
 private data object StartupRoute
+private data object LanguageSelectionRoute
 
 // у каждого открытия экрана сессии собственный ключ
 private data class SessionDebugRoute(
@@ -116,6 +118,12 @@ private fun CodonautNavigation() {
                 }
             }
 
+            StartupUiState.LanguageSelection -> {
+                if (currentRoute == StartupRoute) {
+                    navigateAsRoot(LanguageSelectionRoute)
+                }
+            }
+
             StartupUiState.Error -> {
                 if (currentRoute == OnboardingRoute) {
                     navigateAsRoot(StartupRoute)
@@ -150,7 +158,8 @@ private fun CodonautNavigation() {
                 LoginRoute -> NavEntry(key) {
                     LoginScreen(
                         onAuthenticated = {
-                            navigateAsRoot(SessionDebugRoute())
+                            navigateAsRoot(StartupRoute)
+                            startupViewModel.refreshSessionDestination()
                         },
                         onRegistrationClick = {
                             navigateTo(RegistrationRoute)
@@ -164,7 +173,8 @@ private fun CodonautNavigation() {
                             navigateBack()
                         },
                         onRegistered = {
-                            navigateAsRoot(SessionDebugRoute())
+                            navigateAsRoot(StartupRoute)
+                            startupViewModel.refreshSessionDestination()
                         }
                     )
                 }
@@ -182,6 +192,15 @@ private fun CodonautNavigation() {
                             CircularProgressIndicator()
                         }
                     }
+                }
+
+                LanguageSelectionRoute -> NavEntry(key) {
+                    LanguageSelectionScreen(
+                        onBackClick = { navigateAsRoot(LoginRoute) },
+                        onSelectionSaved = {
+                            navigateAsRoot(SessionDebugRoute())
+                        }
+                    )
                 }
 
                 is SessionDebugRoute -> NavEntry(key) {

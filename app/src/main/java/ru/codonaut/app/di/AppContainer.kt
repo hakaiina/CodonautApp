@@ -14,6 +14,8 @@ import ru.codonaut.app.domain.repository.AuthRepository
 import ru.codonaut.app.domain.usecase.AccountSessionCoordinator
 import ru.codonaut.app.data.repository.LocalAppStartupRepository
 import ru.codonaut.app.domain.repository.AppStartupRepository
+import ru.codonaut.app.data.repository.LocalSelectedLanguageRepository
+import ru.codonaut.app.domain.repository.SelectedLanguageRepository
 
 // di (Dependency Injection) - внедрение зависимостей
 
@@ -69,5 +71,12 @@ class AppContainer(context: Context) {
 
     val appStartupRepository: AppStartupRepository by lazy {
         LocalAppStartupRepository(profilePreferences)
+    }
+
+    val selectedLanguageRepository: SelectedLanguageRepository by lazy {
+        LocalSelectedLanguageRepository(
+            database = database,
+            dao = database.selectedLanguageDao()
+        )
     }
 }
