@@ -11,4 +11,19 @@
     <string name="onboarding_skip">Пропустить</string>
     <string name="show_password">Показать пароль</string>
     <string name="hide_password">Скрыть пароль</string>
+    <string name="language_selection_title">Что будем изучать?</string>
+    <string name="language_selection_subtitle">Выбери один или несколько языков.\nТы сможешь изменить выбор позже</string>
+    <string name="language_selection_continue">Продолжить</string>
+    <string name="language_selection_saving">Сохраняем…</string>
+    <string name="language_selection_back">Назад</string>
+    <string name="language_selection_load_error">Не удалось загрузить профиль. Попробуй вернуться и войти снова.</string>
+    <string name="language_selection_save_error">Не удалось сохранить выбор. Попробуй ещё раз.</string>
+    <string name="language_python">Python</string>
+    <string name="language_javascript">JavaScript</string>
+    <string name="language_java">Java</string>
+    <string name="language_python_description">Понятный старт и логика</string>
+    <string name="language_javascript_description">Интерактивные сайты</string>
+    <string name="language_java_description">Объектно-ориентированный подход</string>
+    <string name="session_debug_languages">Языки: %1$s</string>
+    <string name="session_debug_no_languages">не выбраны</string>
 </resources>

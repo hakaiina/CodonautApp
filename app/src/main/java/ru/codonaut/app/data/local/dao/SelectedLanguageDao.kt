@@ -15,6 +15,11 @@ interface SelectedLanguageDao {
         selection: SelectedLanguageEntity
     ): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(
+        selections: List<SelectedLanguageEntity>
+    )
+
     @Query(
         """
         SELECT language_id
@@ -38,4 +43,7 @@ interface SelectedLanguageDao {
         profileId: String,
         languageId: String
     ): Int
+
+    @Query("DELETE FROM selected_languages WHERE profile_id = :profileId")
+    suspend fun deleteForProfile(profileId: String): Int
 }
