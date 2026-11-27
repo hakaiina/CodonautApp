@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.codonaut.app.R
 import ru.codonaut.app.core.ui.components.BaseButton
+import ru.codonaut.app.core.ui.components.CodonautBackButton
 import ru.codonaut.app.core.ui.theme.CodonautColors
 import ru.codonaut.app.core.ui.theme.CodonautTheme
 import ru.codonaut.app.domain.model.ProgrammingLanguage
@@ -85,16 +86,12 @@ private fun LanguageSelectionContent(
             .safeDrawingPadding()
             .padding(horizontal = 24.dp, vertical = 25.dp)
     ) {
-        Image(
-            painter = painterResource(R.drawable.back),
-            contentDescription = stringResource(R.string.language_selection_back),
-            modifier = Modifier
-                .size(32.dp)
-                .clickable(onClick = onBackClick)
-                .padding(4.dp)
+        CodonautBackButton(
+            onClick = onBackClick,
+            contentDescription = stringResource(R.string.language_selection_back)
         )
 
-        Spacer(Modifier.height(30.dp))
+        Spacer(Modifier.height(14.dp))
         Text(
             text = stringResource(R.string.language_selection_title),
             style = MaterialTheme.typography.headlineSmall,

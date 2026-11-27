@@ -8,7 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -150,98 +154,89 @@ fun SessionDebugScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.isSignedOut) {
-        if (state.isSignedOut) {
-            onSignedOut()
-        }
+        if (state.isSignedOut) onSignedOut()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(CodonautColors.WarmMist)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = "Проверка сессии",
+            text = stringResource(R.string.session_debug_title),
             style = MaterialTheme.typography.headlineSmall,
             color = CodonautColors.EspressoBlack
         )
 
-        Spacer(Modifier.height(24.dp))
-
         if (state.isLoading) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = CodonautColors.DeepTeal)
         } else {
             val profile = state.profile
-
             if (profile != null) {
-                val pythonName = stringResource(R.string.language_python)
-                val javascriptName = stringResource(R.string.language_javascript)
-                val javaName = stringResource(R.string.language_java)
                 val selectedLanguageNames = buildList {
                     if (ProgrammingLanguage.PYTHON.id in state.selectedLanguageIds) {
-                        add(pythonName)
+                        add(stringResource(R.string.language_python))
                     }
                     if (ProgrammingLanguage.JAVASCRIPT.id in state.selectedLanguageIds) {
-                        add(javascriptName)
+                        add(stringResource(R.string.language_javascript))
                     }
                     if (ProgrammingLanguage.JAVA.id in state.selectedLanguageIds) {
-                        add(javaName)
+                        add(stringResource(R.string.language_java))
                     }
                 }
 
-                Text(
-                    text = if (profile.authUid == null) {
-                        "Режим: гость"
-                    } else {
-                        "Режим: зарегистрированный пользователь"
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = CodonautColors.SoftCream)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(
+                                if (profile.authUid == null) R.string.session_debug_guest
+                                else R.string.session_debug_registered
+                            ),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = CodonautColors.DeepTeal
+                        )
+                        Text(stringResource(R.string.session_debug_nickname, profile.nickname ?: stringResource(R.string.session_debug_not_set)))
+                        Text(stringResource(R.string.session_debug_profile_id, profile.profileId))
+                        Text(stringResource(R.string.session_debug_firebase_uid, profile.authUid ?: stringResource(R.string.session_debug_not_linked)))
+                        Text(
+                            stringResource(
+                                R.string.session_debug_languages,
+                                selectedLanguageNames.joinToString()
+                                    .ifBlank { stringResource(R.string.session_debug_no_languages) }
+                            )
+                        )
                     }
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                Text("Никнейм: ${profile.nickname ?: "не задан"}")
-                Text("Profile ID: ${profile.profileId}")
-                Text("Firebase UID: ${profile.authUid ?: "нет"}")
-
-                Text(
-                    text = stringResource(
-                        R.string.session_debug_languages,
-                        selectedLanguageNames.joinToString()
-                            .ifBlank { stringResource(R.string.session_debug_no_languages) }
-                    )
-                )
-
-                Spacer(Modifier.height(24.dp))
+                }
 
                 if (profile.authUid == null) {
-                    Button(
-                        onClick = onRegisterGuest,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Зарегистрировать гостя")
+                    Button(onClick = onRegisterGuest, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.session_debug_register_guest))
                     }
-
-                    Spacer(Modifier.height(12.dp))
                 }
             }
 
             if (state.error != null) {
                 Text(
-                    text = state.error!!,
+                    text = stringResource(R.string.session_debug_error),
                     color = CodonautColors.Error
                 )
             }
-
-            Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = viewModel::signOut,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Выйти из профиля")
+                Text(stringResource(R.string.session_debug_sign_out))
             }
         }
     }
