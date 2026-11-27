@@ -1,7 +1,6 @@
 package ru.codonaut.app.features.auth.registration
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.codonaut.app.R
+import ru.codonaut.app.core.ui.components.CodonautBackButton
 import ru.codonaut.app.core.ui.components.TextField
 import ru.codonaut.app.core.ui.theme.CodonautColors
 import androidx.compose.foundation.layout.WindowInsets
@@ -104,17 +102,11 @@ private fun RegistrationContent(
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 120.dp)
         ) {
-            IconButton(
+            CodonautBackButton(
                 onClick = onBackClick,
                 enabled = !state.isLoading,
                 modifier = Modifier.offset(x = (-10).dp, y = 8.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.back),
-                    contentDescription = "Вернуться ко входу",
-                    modifier = Modifier.size(23.dp)
-                )
-            }
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 

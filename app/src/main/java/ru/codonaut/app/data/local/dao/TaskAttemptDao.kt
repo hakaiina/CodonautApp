@@ -42,6 +42,9 @@ interface TaskAttemptDao {
         taskId: String
     ): Int
 
+    @Query("SELECT COUNT(*) FROM task_attempts WHERE run_id = :runId AND task_id = :taskId AND is_correct = 0 AND is_reinforcement = 0")
+    suspend fun countIncorrectForRun(runId: String, taskId: String): Int
+
     @Query(
         """
         SELECT * FROM task_attempts

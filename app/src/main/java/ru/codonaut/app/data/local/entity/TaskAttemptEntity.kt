@@ -21,7 +21,8 @@ import androidx.room.PrimaryKey
     indices = [
         Index(
             value = ["profile_id", "task_id", "answered_at"]
-        )
+        ),
+        Index(value = ["run_id", "task_id"])
     ]
 )
 
@@ -40,5 +41,11 @@ data class TaskAttemptEntity(
     val isCorrect: Boolean,
 
     @ColumnInfo(name = "answered_at")
-    val answeredAt: Long
+    val answeredAt: Long,
+
+    @ColumnInfo(name = "run_id")
+    val runId: String? = null,
+
+    @ColumnInfo(name = "is_reinforcement", defaultValue = "0")
+    val isReinforcement: Boolean = false
 )

@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(platform(libs.firebase.bom))

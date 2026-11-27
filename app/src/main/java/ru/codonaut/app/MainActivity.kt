@@ -16,9 +16,7 @@ import androidx.navigation3.ui.NavDisplay
 import ru.codonaut.app.core.ui.theme.CodonautTheme
 import ru.codonaut.app.features.auth.login.LoginScreen
 import ru.codonaut.app.features.auth.registration.RegistrationScreen
-import ru.codonaut.app.features.debug.SessionDebugScreen
 import ru.codonaut.app.features.onboarding.OnboardingScreen
-import java.util.UUID
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
@@ -32,17 +30,20 @@ import androidx.compose.runtime.LaunchedEffect
 import ru.codonaut.app.features.startup.StartupUiState
 import ru.codonaut.app.features.startup.StartupViewModel
 import ru.codonaut.app.features.languageSelection.LanguageSelectionScreen
+import ru.codonaut.app.features.home.MainAppScreen
+import ru.codonaut.app.features.learning.CourseMapScreen
+import ru.codonaut.app.features.learning.LessonScreen
+import ru.codonaut.app.features.home.MainSection
+import androidx.compose.runtime.saveable.rememberSaveable
 
 private data object OnboardingRoute
 private data object LoginRoute
 private data object RegistrationRoute
 private data object StartupRoute
 private data object LanguageSelectionRoute
-
-// у каждого открытия экрана сессии собственный ключ
-private data class SessionDebugRoute(
-    val instanceId: String = UUID.randomUUID().toString()
-)
+private data object MainRoute
+private data class CourseMapRoute(val languageId: String)
+private data class LessonRoute(val languageId: String, val lessonId: String)
 
 class MainActivity : ComponentActivity() {
 
@@ -60,6 +61,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun CodonautNavigation() {
+
+    var mainSection by rememberSaveable { mutableStateOf(MainSection.Learning) }
 
     var backStack by remember {
         mutableStateOf<List<Any>>(
@@ -114,7 +117,7 @@ private fun CodonautNavigation() {
 
             StartupUiState.Session -> {
                 if (currentRoute == StartupRoute) {
-                    navigateAsRoot(SessionDebugRoute())
+                    navigateAsRoot(MainRoute)
                 }
             }
 
@@ -196,21 +199,56 @@ private fun CodonautNavigation() {
 
                 LanguageSelectionRoute -> NavEntry(key) {
                     LanguageSelectionScreen(
-                        onBackClick = { navigateAsRoot(LoginRoute) },
+                        onBackClick = {
+                            if (backStack.size > 1) navigateBack()
+                            else navigateAsRoot(LoginRoute)
+                        },
                         onSelectionSaved = {
-                            navigateAsRoot(SessionDebugRoute())
+                            navigateAsRoot(MainRoute)
                         }
                     )
                 }
 
-                is SessionDebugRoute -> NavEntry(key) {
-                    SessionDebugScreen(
+                MainRoute -> NavEntry(key) {
+                    MainAppScreen(
+                        onOpenLanguageSelection = {
+                            navigateTo(LanguageSelectionRoute)
+                        },
                         onSignedOut = {
                             navigateAsRoot(LoginRoute)
                         },
                         onRegisterGuest = {
                             navigateTo(RegistrationRoute)
+                        },
+                        selectedSection = mainSection,
+                        onSectionSelected = { mainSection = it },
+                        onOpenCourseMap = { languageId ->
+                            navigateTo(CourseMapRoute(languageId))
+                        },
+                        onOpenLesson = { languageId, lessonId ->
+                            navigateTo(LessonRoute(languageId, lessonId))
                         }
+                    )
+                }
+
+                is CourseMapRoute -> NavEntry(key) {
+                    CourseMapScreen(
+                        languageId = key.languageId,
+                        onBack = ::navigateBack,
+                        onStartLesson = { languageId, lessonId -> navigateTo(LessonRoute(languageId, lessonId)) },
+                        onSectionSelected = { section ->
+                            mainSection = section
+                            val mainIndex = backStack.indexOf(MainRoute)
+                            backStack = if (mainIndex >= 0) backStack.take(mainIndex + 1) else listOf(MainRoute)
+                        }
+                    )
+                }
+
+                is LessonRoute -> NavEntry(key) {
+                    LessonScreen(
+                        languageId = key.languageId,
+                        lessonId = key.lessonId,
+                        onBack = ::navigateBack
                     )
                 }
 
